@@ -11,13 +11,14 @@ class Deck:
         self.cards.append(card)
 
     def __repr__(self):
-        result = "" 
+        result = ""
         for card in self.cards:
             result = result + ", " + card.__repr__()
         return result
-    
+
     def drawHand(self):
         return Hand(random.sample(self.cards, 5))
+
 
 def myDeck1():
     myDeck = Deck()
@@ -87,9 +88,9 @@ def myDeck1():
     myDeck.addCard(fenrir)
     unicorn = EngineCard('Kashtira Unicorn')
     myDeck.addCard(unicorn)
-    wraitsoth = EngineCard('Wraithsoth') 
+    wraitsoth = EngineCard('Wraithsoth')
     myDeck.addCard(wraitsoth)
     myDeck.addCard(wraitsoth)
     birth = EngineCard('Kashtira Birth')
     myDeck.addCard(birth)
-    return myDeck 
+    return myDeck
