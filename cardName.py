@@ -18,8 +18,7 @@ def card_name(card_id, path="ygoprodeck_database.json"):
     for group in data.values():
         for card in group:
             if str(card.get("id")) == str(card_id):
-                print(card.get("name"))
-                return
+                return str(card.get("name"))
 
     print(f"No card found with ID {card_id}")
 

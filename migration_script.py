@@ -2,49 +2,74 @@ import os
 import json
 import psycopg2
 
-# Database connection config
 conn = psycopg2.connect(
     dbname="mydatabase",
     user="myuser",
     password="mypassword",
-    host="localhost",
-    port="5432"
+    host="localhost"
 )
 cursor = conn.cursor()
 
-# Path to your folder containing language subfolders
-BASE_DIR = "./yugioh-card-history"
+with open("ygoprodeck_database.json") as f:
+    data = json.load(f)
 
-for language in os.listdir(BASE_DIR):
-    lang_path = os.path.join(BASE_DIR, language)
-    if not os.path.isdir(lang_path):
-        continue
+for card in data["data"]:
+    # Insert card
+    cursor.execute("""
+        INSERT INTO cards (id, name, type, human_readable_card_type, frame_type, description, race, archetype, ygoprodeck_url)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (id) DO NOTHING
+    """, (
+        card["id"],
+        card["name"],
+        card.get("type"),
+        card.get("humanReadableCardType"),
+        card.get("frameType"),
+        card.get("desc"),
+        card.get("race"),
+        card.get("archetype"),
+        card.get("ygoprodeck_url")
+    ))
 
-    for filename in os.listdir(lang_path):
-        if filename.endswith(".json"):
-            with open(os.path.join(lang_path, filename), "r", encoding="utf-8") as f:
-                data = json.load(f)
-                
-                cursor.execute("""
-                    INSERT INTO cards (
-                        id, type, name, english_attribute, localized_attribute,
-                        effect_text, level, atk, def, properties, language
-                    )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (id) DO NOTHING
-                """, (
-                    data.get("id"),
-                    data.get("type"),
-                    data.get("name"),
-                    data.get("englishAttribute"),
-                    data.get("localizedAttribute"),
-                    data.get("effectText"),
-                    data.get("level"),
-                    data.get("atk"),
-                    data.get("def"),
-                    data.get("properties", []),
-                    language
-                ))
+    # Insert card_sets
+    for cs in card.get("card_sets", []):
+        cursor.execute("""
+            INSERT INTO card_sets (card_id, set_name, set_code, set_rarity, set_rarity_code, set_price)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            card["id"],
+            cs.get("set_name"),
+            cs.get("set_code"),
+            cs.get("set_rarity"),
+            cs.get("set_rarity_code"),
+            float(cs.get("set_price", 0))
+        ))
+
+    # Insert card_images
+    for ci in card.get("card_images", []):
+        cursor.execute("""
+            INSERT INTO card_images (card_id, image_url, image_url_small, image_url_cropped)
+            VALUES (%s, %s, %s, %s)
+        """, (
+            card["id"],
+            ci.get("image_url"),
+            ci.get("image_url_small"),
+            ci.get("image_url_cropped")
+        ))
+
+    # Insert card_prices
+    for cp in card.get("card_prices", []):
+        cursor.execute("""
+            INSERT INTO card_prices (card_id, cardmarket_price, tcgplayer_price, ebay_price, amazon_price, coolstuffinc_price)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            card["id"],
+            float(cp.get("cardmarket_price", 0)),
+            float(cp.get("tcgplayer_price", 0)),
+            float(cp.get("ebay_price", 0)),
+            float(cp.get("amazon_price", 0)),
+            float(cp.get("coolstuffinc_price", 0))
+        ))
 
 conn.commit()
 cursor.close()

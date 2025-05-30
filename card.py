@@ -6,7 +6,13 @@ class Card:
         self.isStarter = False
 
     def __repr__(self):
-        return self.name
+        tags = []
+        if self.isStarter:
+            tags.append("Starter")
+        if self.isBrick:
+            tags.append("Brick")
+        tag_str = f" ({', '.join(tags)})" if tags else ""
+        return f"{self.name}{tag_str}"
 
 
 class NonEngineCard(Card):

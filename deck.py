@@ -1,96 +1,45 @@
-from card import *
+from card import Card
 from hand import Hand
+from cardName import card_name
 import random
+import re
+from load_db_card_info_from_ydk import load_deck_from_ydk as ldfy
 
 
 class Deck:
-    def __init__(self):
-        self.cards = []
+    def __init__(self, main=[], extra=[], side=[]):
+        self.main = main
+        self.extra = extra
+        self.side = side
 
-    def addCard(self, card):
-        self.cards.append(card)
+    def add_card(self, card, section='main'):
+        if section not in ('main', 'extra', 'side'):
+            raise ValueError("section must be 'main', 'extra', or 'side'")
+        getattr(self, section).append(card)
 
     def __repr__(self):
-        result = ""
-        for card in self.cards:
-            result = result + ", " + card.__repr__()
-        return result
+        def cards_str(cards):
+            return "\n  " + "\n  ".join(repr(card) for card in cards) if cards else " (empty)"
+
+        return (
+            f"Deck:\n"
+            f"Main:{cards_str(self.main)}\n"
+            f"Extra:{cards_str(self.extra)}\n"
+            f"Side:{cards_str(self.side)}"
+        )
 
     def drawHand(self):
-        return Hand(random.sample(self.cards, 5))
+        return Hand(random.sample(self.main, 5))
+
+def load_deck_from_ydk(path_to_ydk):
+    db_config = {
+        'dbname': 'mydatabase',
+        'user': 'myuser',
+        'password': 'mypassword',
+        'host': 'localhost'
+    }
+    return Deck(**ldfy(path_to_ydk,db_config))
 
 
 def myDeck1():
-    myDeck = Deck()
-    smiger = EngineCard('Kristron Smiger')
-    smiger.setStarter()
-    myDeck.addCard(smiger)
-    myDeck.addCard(smiger)
-    myDeck.addCard(smiger)
-    fuwalos = NonEngineCard('Mulcharmy Fuwalos')
-    myDeck.addCard(fuwalos)
-    myDeck.addCard(fuwalos)
-    myDeck.addCard(fuwalos)
-    ash = NonEngineCard('Ash Blossom')
-    myDeck.addCard(ash)
-    myDeck.addCard(ash)
-    myDeck.addCard(ash)
-    imperm = NonEngineCard('Infinite Impermanence')
-    myDeck.addCard(imperm)
-    myDeck.addCard(imperm)
-    myDeck.addCard(imperm)
-    droll = NonEngineCard('Droll and Lock Bird')
-    myDeck.addCard(droll)
-    myDeck.addCard(droll)
-    myDeck.addCard(droll)
-    droplet = NonEngineCard('Forbidden Droplet')
-    myDeck.addCard(droplet)
-    myDeck.addCard(droplet)
-    myDeck.addCard(droplet)
-    ttt = NonEngineCard('Triple Tactics Talent')
-    myDeck.addCard(ttt)
-    calledBy = NonEngineCard('Called By The Grave')
-    myDeck.addCard(calledBy)
-    foolish = EngineCard('Foolish Burial')
-    foolish.setStarter()
-    myDeck.addCard(foolish)
-    inclusion = EngineCard('Kristron Inclusion')
-    inclusion.setStarter()
-    myDeck.addCard(inclusion)
-    myDeck.addCard(inclusion)
-    myDeck.addCard(inclusion)
-    tristaros = EngineCard('Kristron Tristaros')
-    tristaros.setStarter()
-    myDeck.addCard(tristaros)
-    myDeck.addCard(tristaros)
-    myDeck.addCard(tristaros)
-    citree = EngineCard('Kristron Citree')
-    citree.setBrick()
-    myDeck.addCard(citree)
-    thystvern = EngineCard('Kristron Thystvern')
-    thystvern.setBrick()
-    myDeck.addCard(thystvern)
-    cluster = EngineCard('Kristron Cluster ')
-    cluster.setBrick()
-    myDeck.addCard(cluster)
-    sulfador = EngineCard('Kristron Sulfador')
-    myDeck.addCard(sulfador)
-    myDeck.addCard(sulfador)
-    sulfefnir = EngineCard('Kristron Sulfefnir')
-    myDeck.addCard(sulfefnir)
-    myDeck.addCard(sulfefnir)
-    myDeck.addCard(sulfefnir)
-    tidal = EngineCard('Tidal, Dragon Ruler of Waterfalls')
-    myDeck.addCard(tidal)
-    myDeck.addCard(tidal)
-    fenrir = EngineCard('Kashtira Fenrir')
-    myDeck.addCard(fenrir)
-    myDeck.addCard(fenrir)
-    unicorn = EngineCard('Kashtira Unicorn')
-    myDeck.addCard(unicorn)
-    wraitsoth = EngineCard('Wraithsoth')
-    myDeck.addCard(wraitsoth)
-    myDeck.addCard(wraitsoth)
-    birth = EngineCard('Kashtira Birth')
-    myDeck.addCard(birth)
-    return myDeck
+    return load_deck_from_ydk('Decks/Azamina_Kashtira_Crystron.ydk')
